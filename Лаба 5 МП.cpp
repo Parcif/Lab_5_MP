@@ -63,7 +63,7 @@ char check_f_i() // f и i
 }
 
 
-string check_date(istream& is)  // Проверка ввода давления
+string check_date(istream& is)  // Проверка ввода даты
 {
 	int days[12] = { 31,29,31,30,31,30,31,31,30,31,30,31 };
 	string inp;
@@ -97,15 +97,15 @@ string check_date(istream& is)  // Проверка ввода давления
 				cout << "\nОшибка! Повторите ввод: ";
 
 		}
-		catch (invalid_argument)
-		{
-			cout << "\nОшибка!!! Повторите ввод: ";
-		}
 		catch (runtime_error& e)
 		{
 			cout << e.what();
 		}
-
+		catch (invalid_argument)
+		{
+			cout << "\nОшибка!!! Повторите ввод: ";
+		}
+		
 	}
 	return inp;
 }
@@ -122,8 +122,14 @@ double check_press(istream& is)  // Проверка ввода давления
 		getline(is, inp);
 		try
 		{
+			for (int i = 0; i < inp.size(); i++)
+			{
+				if((inp[i] != '.') && (isdigit(inp[i]) == 0))
+					throw runtime_error("\nОшибка!!! Повторите ввод: ");
+			}
+
 			res = stod(inp, &ptr);
-			if ((res > 0) && (inp.size() == ptr))
+			if ((res > 0) && (inp.size() == ptr) && (inp[0] != '.'))
 			{
 				state = false;
 			}
@@ -131,11 +137,18 @@ double check_press(istream& is)  // Проверка ввода давления
 				cout << "\nОшибка! Повторите ввод: ";
 
 		}
+		catch (runtime_error& e)
+		{
+			cout << e.what();
+		}
 		catch (invalid_argument)
 		{
 			cout << "\nОшибка!!! Повторите ввод: ";
 		}
-
+		catch (out_of_range)
+		{
+			cout << "\nО нет, выход за пределы максимально возможного значения!!! Повторите ввод: ";
+		}
 	}
 	return res;
 }
