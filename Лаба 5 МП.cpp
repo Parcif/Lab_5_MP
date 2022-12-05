@@ -3,6 +3,9 @@
 #include <string>
 #include <fstream>
 #include <regex>
+#include <typeinfo>
+#include <typeinfo>
+
 using namespace std;
 
 
@@ -26,15 +29,7 @@ public:
 
 	tirepressure()  // Конструктор по умолчанию
 	{
-		date = "0"; press1 = 0; press2 = 0; press3 = 0;
-	}
-
-	tirepressure(string d, vector<double> vec) // Считывающий из файла конструктор
-	{
-		date = d; 
-		press1 = vec[0];
-		press2 = vec[1];
-		press3 = vec[2];
+		date = "0"; press1 = 0; press2 = 0; press3 = 0; average = 0;
 	}
 
 	friend ostream& operator<<(ostream& os, const tirepressure& point);
@@ -63,7 +58,7 @@ char check_f_i() // f и i
 }
 
 
-string check_date(istream& is)  // Проверка ввода даты
+string check_dateInput()  // Проверка ввода даты
 {
 	int days[12] = { 31,29,31,30,31,30,31,31,30,31,30,31 };
 	string inp;
@@ -74,7 +69,7 @@ string check_date(istream& is)  // Проверка ввода даты
 
 	while (state)
 	{
-		getline(is, inp);
+		getline(cin, inp);
 		try
 		{
 			if (inp.size() != 5 || inp[2] != '.')
@@ -89,7 +84,7 @@ string check_date(istream& is)  // Проверка ввода даты
 			day = stoi(out[0]);
 			month = stoi(out[1]);
 
-			if ((day > 0 && day <= days[month - 1]) && (inp.size() == ptr && inp.size() == 5))
+			if ((day > 0 && day <= days[month - 1]) && (month > 0 && month <= 12) && (inp.size() == ptr))
 			{
 				state = false;
 			}
@@ -110,7 +105,7 @@ string check_date(istream& is)  // Проверка ввода даты
 	return inp;
 }
 
-double check_press(istream& is)  // Проверка ввода давления
+double check_pressInput()  // Проверка ввода давления
 {
 	double res;
 	string inp;
@@ -119,7 +114,7 @@ double check_press(istream& is)  // Проверка ввода давления
 
 	while (state)
 	{
-		getline(is, inp);
+		getline(cin, inp);
 		try
 		{
 			for (int i = 0; i < inp.size(); i++)
@@ -129,7 +124,7 @@ double check_press(istream& is)  // Проверка ввода давления
 			}
 
 			res = stod(inp, &ptr);
-			if ((res > 0) && (inp.size() == ptr) && (inp[0] != '.'))
+			if ((inp.size() == ptr) && (inp[0] != '.'))
 			{
 				state = false;
 			}
@@ -153,30 +148,34 @@ double check_press(istream& is)  // Проверка ввода давления
 	return res;
 }
 
-istream& operator>>(istream& is, tirepressure& c)  // Перегрузка ввода
-{
-	cout << "\nВведите дату: ";
-	c.date = check_date(is);
-
-	cout << "Введите давление 1: ";
-	c.press1 = check_press(is);
-
-	cout << "Введите давление 2: ";
-	c.press2 = check_press(is);
-
-	cout << "Введите давление 3: ";
-	c.press3 = check_press(is);
-
-	return is;
-}
-
-
 void check_dateFileInput(string& str, string& date)
 {
 	size_t n = str.find(' ');
 	date = (n != string::npos) ? str.substr(0, n) : "";
 
-	str.erase(0, 6);
+	if (date.size() != 5 || date[2] != '.')
+		throw runtime_error("\nНекорректные данные в файле!\n");
+
+	size_t ptr = 0;
+	int day;
+	int month;
+	int days[12] = { 31,29,31,30,31,30,31,31,30,31,30,31 };
+
+	double check = stod(date, &ptr);
+
+	regex regex("\\.");
+
+	vector<string> out(sregex_token_iterator(date.begin(), date.end(), regex, -1), sregex_token_iterator());
+
+	day = stoi(out[0]);
+	month = stoi(out[1]);
+
+	if ((day <= 0 || day > days[month - 1]) || (month <= 0 || month > 12) || (date.size() != ptr))
+	{
+		throw runtime_error("\nНекорректные данные в файле!\n");
+	}
+	else
+		str.erase(0, 6);
 }
 
 void check_pressureFileInput(string str, vector<double>& digits)
@@ -186,39 +185,68 @@ void check_pressureFileInput(string str, vector<double>& digits)
 	double press1;
 	double press2;
 	double press3;
-	bool state = true;
+			
+	regex regex("\\ ");
 
-	while (state)
+	vector<string> out(sregex_token_iterator(str.begin(), str.end(), regex, -1), sregex_token_iterator());
+
+	if (out.size() != 3)
+		throw runtime_error("\nНекорректные данные в файле!\n");
+
+	press1 = stod(out[0], &ptr1);
+	press2 = stod(out[1], &ptr2);
+	press3 = stod(out[2], &ptr3);
+
+	if ((press1 > 0) && (out[0].size() == ptr1) && (out[0][0] != '.') && (press2 > 0) && (out[1].size() == ptr2) && (out[1][0] != '.') && (press3 > 0) && (out[2].size() == ptr3) && (out[2][0] != '.'))
 	{
-		if (isdigit(str[0]) == 0)	// выбрасываем ошибку если первый элемент не цифра
-			throw runtime_error("\nНекорректные данные в файле!\n");
-
-		regex regex("\\ ");
-
-		vector<string> out(sregex_token_iterator(str.begin(), str.end(), regex, -1), sregex_token_iterator());
-
-		if (out.size() != 3)
-			throw runtime_error("\nНекорректные данные в файле!\n");
-
-		press1 = stod(out[0], &ptr1);
-		press2 = stod(out[1], &ptr2);
-		press3 = stod(out[2], &ptr3);
-
-		if ((press1 > 0) && (out[0].size() == ptr1) && (press2 > 0) && (out[1].size() == ptr2) && (press3 > 0) && (out[2].size() == ptr3))
-		{
-			state = false;
-			digits.push_back(press1);
-			digits.push_back(press2);
-			digits.push_back(press3);
-		}
-		else
-		{
-			throw runtime_error("\nНекорректные данные в файле!\n");
-		}
-
+		digits.push_back(press1);
+		digits.push_back(press2);
+		digits.push_back(press3);
+	}
+	else
+	{
+		throw runtime_error("\nНекорректные данные в файле!\n");
 	}
 
 }
+
+istream& operator>>(istream& is, tirepressure& c)  // Перегрузка ввода
+{
+	if (typeid(is) == typeid(cin))
+	{
+		cout << "\nВведите дату: ";
+		c.date = check_dateInput();
+
+		cout << "Введите давление 1: ";
+		c.press1 = check_pressInput();
+
+		cout << "Введите давление 2: ";
+		c.press2 = check_pressInput();
+
+		cout << "Введите давление 3: ";
+		c.press3 = check_pressInput();
+		
+	}
+	else 
+	{
+		string str;
+		getline(is, str);
+
+		string date;
+		check_dateFileInput(str, date);
+
+		vector<double> digits;
+		check_pressureFileInput(str, digits);
+
+		c.date = date;
+		c.press1 = digits[0];
+		c.press2 = digits[1];
+		c.press3 = digits[2];
+		
+	}
+	return is;
+}
+
 
 void fInput(vector<tirepressure>& obj, vector<double>& proc)  // Чтение из файла
 {
@@ -237,16 +265,9 @@ void fInput(vector<tirepressure>& obj, vector<double>& proc)  // Чтение и
 
 	while (state)
 	{
-		string str;
-		getline(file, str);
-		
-		string date;
-		check_dateFileInput(str, date);
-
-		vector<double> digits;
-		check_pressureFileInput(str, digits);
-		tirepressure p(date, digits);
-		obj.push_back(p);
+		tirepressure e;
+		file >> e;  // Перегруженный ввод
+		obj.push_back(e);
 
 		if (file.eof())
 		{
@@ -308,7 +329,7 @@ void consInput(vector<tirepressure>& obj, vector<double>& proc)
 	{
 		cout << "\nОбъект класса " << i + 1 << ":" << endl;
 		tirepressure e;
-		cin >> e;
+		cin >> e;	// Перегруженный ввод
 		obj.push_back(e);
 	}
 
@@ -436,6 +457,14 @@ int main()
 	catch (runtime_error& e)
 	{
 		cout << e.what();
+	}
+	catch (invalid_argument)
+	{
+		cout << "\nНекорректные данные в файле!\n";
+	}
+	catch (out_of_range)
+	{
+		cout << "\nО нет, выход за пределы максимально возможного значения!!!\n";
 	}
 
 }
