@@ -249,7 +249,7 @@ istream& operator>>(istream& is, tirepressure& c)  // Перегрузка вв�
 void fInput(vector<tirepressure>& obj, vector<double>& proc)  // Чтение из файла
 {
 	ifstream file;
-	file.open("C:\\Users\\Artem1\\Desktop\\Лаба 5 МП читаем.txt");
+	file.open("C:\\Users\\artem\\OneDrive\\Рабочий стол\\Лаба 5 МП читаем.txt");
 
 	if (file.is_open())  // Проверка отрылся файл или нет
 		cout << "\n\nВсе хорошо! Файл открыт!" << endl;
@@ -369,7 +369,7 @@ ostream& operator<<(ostream& os, const tirepressure& point)	 // Перегруз
 void fOutput(vector<tirepressure> obj, vector<double> proc)  // Вывод массивов в файл
 {
 	ofstream file; // создаем объект класса ofstream
-	file.open("C:\\Users\\Artem1\\Desktop\\Лаба 5 МП записываем.txt");
+	file.open("C:\\Users\\artem\\OneDrive\\Рабочий стол\\Лаба 5 МП записываем.txt");
 
 	if (file.is_open())  // Проверка отрылся файл или нет
 		cout << "\n\nВсе хорошо! Файл открыт! Записано в файл!" << endl;
